@@ -1,7 +1,5 @@
-
-
-
-
+Lottery has to specify both number of tickets and price for each ticket. 
+A constructor can do that along with the purchase of first ticket.
 
 1. Check if the creator has purchased the lottery after first deployment.
 2. Check if other users are able to purchase a lottery.
