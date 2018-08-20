@@ -1,5 +1,5 @@
 const Lottery = artifacts.require("../contracts/Lottery.sol");
-const isError = require("./helpers/delay");
+const isError = require("./helpers/is-error");
 
 contract("Lottery", accounts => {
     let lottery;
@@ -23,21 +23,8 @@ contract("Lottery", accounts => {
         })
     })
 
-    it("should declare a winner after the lottery ends", () => {
+    it("should end lottery and declare winner once all the tickets are sold", () => {
         const winnerEvent = lottery.WinnerDeclared();
-        return winnerEvent.get().then(events => {
-            console.log("Event called");
-            const winner = events[0].args.winner;
-            for (let i = 0; i < 5; i++) {
-                if (winner == accounts[i]) {
-                    return;
-                }
-            }
-            assert(false, "lottery is not won by one of the participants");
-        })
-    })
-
-    it("should end lottery once all the tickets are sold", () => {
         return Promise.all([
             lottery.buy({ from: accounts[2], value: web3.toWei("1") }),
             lottery.buy({ from: accounts[3], value: web3.toWei("1") }),
@@ -46,6 +33,25 @@ contract("Lottery", accounts => {
             return lottery.ended.call();
         }).then(hasEnded => {
             assert.isTrue(hasEnded, "lottery has not ended after all tickets are sold");
+            return winnerEvent.get();
+        }).then(events => {
+            const winner = events[0].args.winner;
+            for (let i = 0; i < 5; i++) {
+                if (winner == accounts[i]) {
+                    console.log("lottery winner is accounts["+i+"]");
+                    return;
+                }
+            }
+            assert(false, "lottery is not won by one of the participants");
+        })
+    })
+
+    it("should not allow user to buy ticket after the lottery has ended", () => {
+        return lottery.buy({ from: accounts[5], value: web3.toWei("1") }).then(() => {
+            return Promise.reject("lottery was bought after it has ended");
+        }).catch(isError)
+        .then(e => {
+            assert.isDefined(e)
         })
     })
 })

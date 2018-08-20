@@ -7,6 +7,8 @@ contract Lottery {
     address[] public soldTickets;
     bool public ended;
 
+    event WinnerDeclared(address winner);
+
     modifier checkForExactValue(uint cost) {
         require(msg.value == cost, "Exact amount should be send to buy a ticket");
         _;
@@ -25,6 +27,7 @@ contract Lottery {
         if (soldTickets.length == totalTickets) {
             ended = true;
             address winner = soldTickets[getWinnerIndex()];
+            emit WinnerDeclared(winner);
             winner.transfer(costPerTicket * totalTickets);
         }
     }
