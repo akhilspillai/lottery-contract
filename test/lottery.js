@@ -23,6 +23,20 @@ contract("Lottery", accounts => {
         })
     })
 
+    it("should declare a winner after the lottery ends", () => {
+        const winnerEvent = lottery.WinnerDeclared();
+        return winnerEvent.get().then(events => {
+            console.log("Event called");
+            const winner = events[0].args.winner;
+            for (let i = 0; i < 5; i++) {
+                if (winner == accounts[i]) {
+                    return;
+                }
+            }
+            assert(false, "lottery is not won by one of the participants");
+        })
+    })
+
     it("should end lottery once all the tickets are sold", () => {
         return Promise.all([
             lottery.buy({ from: accounts[2], value: web3.toWei("1") }),
