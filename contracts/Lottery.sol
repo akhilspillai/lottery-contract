@@ -7,12 +7,20 @@ contract Lottery {
 
     address[] public soldTickets;
 
-    constructor(uint noOfTickets, uint costOfTicket) public payable {
+    modifier checkForExactValue(uint cost) {
+        require(msg.value == cost, "Exact amount should be send to buy a ticket");
+        _;
+    }
+
+    constructor(uint noOfTickets, uint costOfTicket) public payable checkForExactValue(costOfTicket) {
         totalTickets = noOfTickets;
         costPerTicket = costOfTicket;
 
-        require(msg.value == costPerTicket, "Exact amount should be send to buy a ticket");
 
+        soldTickets.push(msg.sender);
+    }
+
+    function buy() public payable checkForExactValue(costPerTicket) {
         soldTickets.push(msg.sender);
     }
 }

@@ -1,4 +1,5 @@
 const Lottery = artifacts.require("../contracts/Lottery.sol");
+const isError = require("./helpers/delay");
 
 contract("Lottery", accounts => {
     let lottery;
@@ -17,8 +18,20 @@ contract("Lottery", accounts => {
     it("should allow other people to buy tickets", () => {
         return lottery.buy({ from: accounts[1], value: web3.toWei("1") }).then(() => {
             return lottery.soldTickets.call(1);
-        }).then(() => {
+        }).then(account => {
             assert.equal(account, accounts[1], "ticket not sold to the correct user");
+        })
+    })
+
+    it("should end lottery once all the tickets are sold", () => {
+        return Promise.all([
+            lottery.buy({ from: accounts[2], value: web3.toWei("1") }),
+            lottery.buy({ from: accounts[3], value: web3.toWei("1") }),
+            lottery.buy({ from: accounts[4], value: web3.toWei("1") })
+        ]).then(() => {
+            return lottery.ended.call();
+        }).then(hasEnded => {
+            assert.isTrue(hasEnded, "lottery has not ended after all tickets are sold");
         })
     })
 })
