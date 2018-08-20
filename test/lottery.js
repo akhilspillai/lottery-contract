@@ -23,6 +23,24 @@ contract("Lottery", accounts => {
         })
     })
 
+    it("should not allow users to buy tickets with a higher amount than specified", () => {
+        return lottery.buy({ from: accounts[2], value: web3.toWei("2") }).then(() => {
+            return Promise.reject("lottery was bought with a higher amount");
+        }).catch(isError)
+        .then(e => {
+            assert.isDefined(e)
+        })
+    })
+
+    it("should not allow users to buy tickets with a lower amount than specified", () => {
+        return lottery.buy({ from: accounts[2], value: web3.toWei("0.5") }).then(() => {
+            return Promise.reject("lottery was bought with a lower amount");
+        }).catch(isError)
+        .then(e => {
+            assert.isDefined(e)
+        })
+    })
+
     it("should end lottery and declare winner once all the tickets are sold", () => {
         const winnerEvent = lottery.WinnerDeclared();
         return Promise.all([
@@ -46,7 +64,7 @@ contract("Lottery", accounts => {
         })
     })
 
-    it("should not allow user to buy ticket after the lottery has ended", () => {
+    it("should not allow user to buy a ticket after the lottery has ended", () => {
         return lottery.buy({ from: accounts[5], value: web3.toWei("1") }).then(() => {
             return Promise.reject("lottery was bought after it has ended");
         }).catch(isError)

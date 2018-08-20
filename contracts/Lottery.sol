@@ -9,19 +9,14 @@ contract Lottery {
 
     event WinnerDeclared(address winner);
 
-    modifier checkForExactValue(uint cost) {
-        require(msg.value == cost, "Exact amount should be send to buy a ticket");
-        _;
-    }
-
-    constructor(uint noOfTickets, uint costOfTicket) public payable checkForExactValue(costOfTicket) {
+    constructor(uint noOfTickets, uint costOfTicket) public payable {
         totalTickets = noOfTickets;
         costPerTicket = costOfTicket;
 
         soldTickets.push(msg.sender);
     }
 
-    function buy() public payable checkForExactValue(costPerTicket) {
+    function buy() public payable {
         require(!ended, "Lottery has already ended");
         soldTickets.push(msg.sender);
         if (soldTickets.length == totalTickets) {
